@@ -1,0 +1,90 @@
+import java.util.*;
+
+public class PenSales {
+
+    
+    private static final int MIN_PRICE = 20;
+    private static final int MAX_PRICE = 30;
+    private static final int MIN_UNITS = 100;
+    private static final int MAX_UNITS = 1000;
+
+     
+    private static class SaleRecord {
+        int unitsSold;
+        double price;
+        double amount;
+
+        public SaleRecord(int unitsSold, double price) {
+            this.unitsSold = unitsSold;
+            this.price = price;
+            this.amount = unitsSold * price;
+        }
+    }
+
+    public static void main(String[] args) {
+        
+        SaleRecord[] salesData = generateSalesData(365);
+ 
+        Map<Integer, double[]> monthlySales = new HashMap<>();
+        Map<Integer, double[]> quarterlySales = new HashMap<>();
+        for (SaleRecord record : salesData) {
+            int month = (record.unitsSold / 30) + 1;  
+            int quarter = (month + 2) / 3;  
+            monthlySales.computeIfAbsent(month, k -> new double[]{0, 0});
+            monthlySales.get(month)[0] += record.unitsSold;
+            monthlySales.get(month)[1] += record.amount;
+            quarterlySales.computeIfAbsent(quarter, k -> new double[]{0, 0});
+            quarterlySales.get(quarter)[0] += record.unitsSold;
+            quarterlySales.get(quarter)[1] += record.amount;
+        }
+
+        System.out.println("Monthly Sales:");
+        for (int month = 1; month <= 12; month++) {
+            if (monthlySales.containsKey(month)) {
+                System.out.printf("Month %d: Units Sold: %.2f, Amount: %.2f\n", month, monthlySales.get(month)[0], monthlySales.get(month)[1]);
+            } else {
+                System.out.printf("Month %d: No sales\n", month);
+            }
+        }
+
+        System.out.println("\nQuarterly Sales:");
+        for (int quarter = 1; quarter <= 4; quarter++) {
+            if (quarterlySales.containsKey(quarter)) {
+                System.out.printf("Quarter %d: Units Sold: %.2f, Amount: %.2f\n", quarter, quarterlySales.get(quarter)[0], quarterlySales.get(quarter)[1]);
+            } else {
+                System.out.printf("Quarter %d: No sales\n", quarter);
+            }
+        }
+        double maxAmount = 0;
+        int maxAmountQuarter = 0;
+        double maxUnits = 0;
+        int maxUnitsQuarter = 0;
+        for (int quarter = 1; quarter <= 4; quarter++) {
+            if (quarterlySales.containsKey(quarter)) {
+                if (quarterlySales.get(quarter)[1] > maxAmount) {
+                    maxAmount = quarterlySales.get(quarter)[1];
+                    maxAmountQuarter = quarter;
+                }
+                if (quarterlySales.get(quarter)[0] > maxUnits) {
+                    maxUnits = quarterlySales.get(quarter)[0];
+                    maxUnitsQuarter = quarter;
+                }
+               
+            }
+        }
+
+        System.out.println("\nQuarter with highest sales (amount): Quarter " + maxAmountQuarter);
+        System.out.println("Quarter with highest sales (units): Quarter " + maxUnitsQuarter);
+    }
+
+    private static SaleRecord[] generateSalesData(int days) {
+        SaleRecord[] records = new SaleRecord[days];
+        Random random = new Random();
+        for (int i = 0; i < days; i++) {
+            double price = MIN_PRICE + random.nextDouble() * (MAX_PRICE - MIN_PRICE);
+            int unitsSold = MIN_UNITS + random.nextInt(MAX_UNITS - MIN_UNITS + 1);
+            records[i] = new SaleRecord(unitsSold, price);
+        }
+        return records;
+    }
+}
